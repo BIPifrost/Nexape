@@ -22,6 +22,10 @@ pnpm-debug.log*
 
 .vercel
 
+# local browser QA artifacts
+.playwright-cli/
+output/playwright/
+
 package-lock.json
 bun.lockb
 yarn.lock

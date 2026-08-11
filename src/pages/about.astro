@@ -1,25 +1,657 @@
 ---
-
-import { getEntry, render } from "astro:content";
-import Markdown from "@components/misc/Markdown.astro";
-import I18nKey from "../i18n/i18nKey";
-import { i18n } from "../i18n/translation";
+import ImageWrapper from "@components/misc/ImageWrapper.astro";
+import { Icon } from "astro-icon/components";
+import { profileConfig } from "../config";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import { url } from "../utils/url-utils";
 
-const aboutPost = await getEntry("spec", "about");
+const focusCards = [
+	{
+		icon: "material-symbols:code-rounded",
+		title: "编程与学习",
+		description: "记录计算机学习、编程知识，以及一路上真正弄懂的东西。",
+		hue: 250,
+	},
+	{
+		icon: "material-symbols:deployed-code-outline",
+		title: "项目与实践",
+		description: "把开发过程中的思路、踩坑和解决方案整理随笔。",
+		hue: 165,
+	},
+	{
+		icon: "material-symbols:edit-note-rounded",
+		title: "生活与灵感",
+		description: "偶尔写写兴趣、日常，以及那些值得被留下来的小想法。",
+		hue: 35,
+	},
+];
 
-if (!aboutPost) {
-	throw new Error("About page content not found");
-}
-
-const { Content } = await render(aboutPost);
+const socialDescriptions: Record<string, string> = {
+	GitHub: "看看我正在实现的想法",
+	X: "关注我的碎片化动态",
+	Steam: "一起玩点有意思的游戏",
+};
 ---
-<MainGridLayout title={i18n(I18nKey.about)} description={i18n(I18nKey.about)}>
-    <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
-        <div class="card-base z-10 px-9 py-6 relative w-full ">
-            <Markdown class="mt-2">
-                <Content />
-            </Markdown>
-        </div>
-    </div>
+
+<MainGridLayout title="关于我" description="认识 BIPifrost 与 Nexape">
+	<div class="about-page space-y-4">
+		<section class="about-hero card-base" aria-labelledby="about-title">
+			<div class="hero-glow hero-glow-one" aria-hidden="true"></div>
+			<div class="hero-glow hero-glow-two" aria-hidden="true"></div>
+			<div class="hero-copy">
+				<div class="eyebrow">
+					<span class="eyebrow-dot"></span>
+					HELLO, WORLD!
+				</div>
+				<h1 id="about-title">Hola，我是 <span>BIPifrost</span></h1>
+				<p class="hero-lead">
+					来自CSU的本科生，正在记录我的生活。
+				</p>
+				<p class="hero-note">
+					这里不需要等到“准备好”才开始。Nexape 是我的第一个个人博客，也是一场公开而长期的尝试。
+				</p>
+				<div class="hero-actions">
+					<a class="primary-action" href={url("/posts/first-post/")}>
+						读第一篇文章
+						<Icon name="material-symbols:arrow-forward-rounded" />
+					</a>
+					<a class="secondary-action" href="https://github.com/BIPifrost" target="_blank" rel="noopener noreferrer">
+						<Icon name="fa6-brands:github" />
+						GitHub
+					</a>
+				</div>
+			</div>
+
+			<div class="portrait-wrap" aria-label="BIPifrost 的头像">
+				<div class="portrait-ring">
+					<ImageWrapper src={profileConfig.avatar || ""} alt="BIPifrost 的头像" class="portrait" />
+				</div>
+				<div class="status-badge">
+					<span></span>
+					持续学习中
+				</div>
+			</div>
+		</section>
+
+		<section class="card-base section-card" aria-labelledby="now-title">
+			<div class="section-heading">
+				<div>
+					<p>WHAT I WRITE</p>
+					<h2 id="now-title">这里会出现什么？</h2>
+				</div>
+				<Icon name="material-symbols:auto-awesome-rounded" aria-hidden="true" />
+			</div>
+
+			<div class="focus-grid">
+				{focusCards.map((item, index) => (
+					<div class="focus-card" style={`--tile-hue: ${item.hue}; --delay: ${index * 50}ms`}>
+						<div class="focus-icon"><Icon name={item.icon} /></div>
+						<h3>{item.title}</h3>
+						<p>{item.description}</p>
+					</div>
+				))}
+			</div>
+		</section>
+
+		<div class="about-grid">
+			<section class="card-base story-card" aria-labelledby="nexape-title">
+				<div class="story-icon"><Icon name="material-symbols:rocket-launch-rounded" /></div>
+				<p class="story-label">ABOUT NEXAPE</p>
+				<h2 id="nexape-title">一次新的尝试</h2>
+				<p>
+					没有严格的更新计划，也不急着给内容限定方向。希望这个小站能随着我的学习和经历，慢慢把我刻画在你面前，成为一个生动的“人”。
+				</p>
+				<div class="tag-list" aria-label="博客关键词">
+					<span># 软件工程</span>
+					<span># 项目记录</span>
+					<span># 随想</span>
+				</div>
+			</section>
+
+			<section class="card-base social-card" aria-labelledby="social-title">
+				<div class="section-heading compact">
+					<div>
+						<p>KEEP IN TOUCH</p>
+						<h2 id="social-title">找到我</h2>
+					</div>
+					<Icon name="material-symbols:alternate-email-rounded" aria-hidden="true" />
+				</div>
+
+				<div class="social-list">
+					{profileConfig.links.map((item) => (
+						<a href={item.url} target="_blank" rel="me noopener noreferrer" aria-label={`访问 ${item.name}`}>
+							<span class="social-icon"><Icon name={item.icon} /></span>
+							<span class="social-copy">
+								<strong>{item.name}</strong>
+								<small>{socialDescriptions[item.name]}</small>
+							</span>
+							<Icon class="social-arrow" name="material-symbols:arrow-outward-rounded" />
+						</a>
+					))}
+				</div>
+			</section>
+		</div>
+
+		<div class="site-note">
+			<Icon name="material-symbols:favorite-rounded" />
+			<span>使用 Astro 构建，基于 Fuwari 主题个性化修改。</span>
+		</div>
+	</div>
 </MainGridLayout>
+
+<style>
+	.about-page {
+		--about-blue: oklch(0.68 0.17 250);
+		--about-cyan: oklch(0.72 0.13 205);
+		--about-pink: oklch(0.73 0.14 345);
+		color: rgb(38 38 38 / 0.9);
+	}
+
+	:global(.dark) .about-page {
+		color: rgb(255 255 255 / 0.9);
+	}
+
+	.about-hero {
+		position: relative;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 13rem;
+		align-items: center;
+		gap: 2.5rem;
+		min-height: 25rem;
+		padding: 3rem;
+		isolation: isolate;
+		overflow: hidden;
+		background:
+			linear-gradient(135deg, oklch(0.97 0.025 250 / 0.92), oklch(0.98 0.025 345 / 0.88)),
+			var(--card-bg);
+	}
+
+	:global(.dark) .about-hero {
+		background:
+			linear-gradient(135deg, oklch(0.25 0.035 250 / 0.96), oklch(0.23 0.03 320 / 0.95)),
+			var(--card-bg);
+	}
+
+	.hero-copy,
+	.portrait-wrap {
+		position: relative;
+		z-index: 2;
+	}
+
+	.hero-copy {
+		animation: about-enter 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	.eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.55rem;
+		margin-bottom: 1.15rem;
+		padding: 0.45rem 0.75rem;
+		border: 1px solid oklch(0.68 0.17 250 / 0.22);
+		border-radius: 999px;
+		background: oklch(1 0 0 / 0.55);
+		color: oklch(0.5 0.16 250);
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.13em;
+	}
+
+	:global(.dark) .eyebrow {
+		background: oklch(1 0 0 / 0.06);
+		color: oklch(0.78 0.12 250);
+	}
+
+	.eyebrow-dot,
+	.status-badge span {
+		width: 0.48rem;
+		height: 0.48rem;
+		border-radius: 999px;
+		background: oklch(0.72 0.18 150);
+		box-shadow: 0 0 0 0.25rem oklch(0.72 0.18 150 / 0.15);
+	}
+
+	.about-hero h1 {
+		margin: 0;
+		font-size: clamp(2.2rem, 5vw, 3.8rem);
+		line-height: 1.08;
+		letter-spacing: -0.045em;
+	}
+
+	.about-hero h1 span {
+		background: linear-gradient(100deg, var(--about-blue), var(--about-pink));
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+
+	.hero-lead {
+		max-width: 40rem;
+		margin: 1.25rem 0 0;
+		font-size: 1.12rem;
+		font-weight: 500;
+		line-height: 1.8;
+	}
+
+	.hero-note {
+		max-width: 39rem;
+		margin: 0.7rem 0 0;
+		color: rgb(82 82 82 / 0.78);
+		line-height: 1.75;
+	}
+
+	:global(.dark) .hero-note {
+		color: rgb(229 229 229 / 0.65);
+	}
+
+	.hero-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-top: 1.7rem;
+	}
+
+	.primary-action,
+	.secondary-action {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		min-height: 2.75rem;
+		padding: 0.65rem 1rem;
+		border-radius: 0.8rem;
+		font-weight: 700;
+		text-decoration: none;
+		transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 180ms ease, background-color 180ms ease;
+	}
+
+	.primary-action {
+		background: linear-gradient(100deg, var(--about-blue), oklch(0.68 0.17 285));
+		box-shadow: 0 0.65rem 1.5rem oklch(0.55 0.17 260 / 0.22);
+		color: white;
+	}
+
+	.secondary-action {
+		border: 1px solid rgb(115 115 115 / 0.15);
+		background: rgb(255 255 255 / 0.52);
+		color: inherit;
+	}
+
+	:global(.dark) .secondary-action {
+		background: rgb(255 255 255 / 0.07);
+	}
+
+	.primary-action :global(svg),
+	.secondary-action :global(svg) {
+		font-size: 1.1rem;
+	}
+
+	.portrait-wrap {
+		justify-self: center;
+		animation: about-enter 280ms 70ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	.portrait-ring {
+		width: 12rem;
+		height: 12rem;
+		padding: 0.42rem;
+		border-radius: 2.2rem;
+		background: linear-gradient(140deg, var(--about-cyan), var(--about-blue), var(--about-pink));
+		box-shadow: 0 1.4rem 3rem oklch(0.45 0.12 270 / 0.2);
+		transform: rotate(3deg);
+	}
+
+	.portrait {
+		width: 100%;
+		height: 100%;
+		border: 0.32rem solid var(--card-bg);
+		border-radius: 1.75rem;
+		background: var(--card-bg);
+	}
+
+	.status-badge {
+		position: absolute;
+		right: -1rem;
+		bottom: -1.1rem;
+		display: flex;
+		align-items: center;
+		gap: 0.55rem;
+		padding: 0.7rem 0.9rem;
+		border: 1px solid rgb(115 115 115 / 0.14);
+		border-radius: 0.9rem;
+		background: var(--card-bg);
+		box-shadow: 0 0.8rem 2rem rgb(0 0 0 / 0.12);
+		font-size: 0.82rem;
+		font-weight: 700;
+		white-space: nowrap;
+	}
+
+	.hero-glow {
+		position: absolute;
+		z-index: 0;
+		border-radius: 999px;
+		filter: blur(1px);
+		pointer-events: none;
+	}
+
+	.hero-glow-one {
+		top: -6rem;
+		right: -3rem;
+		width: 18rem;
+		height: 18rem;
+		background: oklch(0.78 0.11 330 / 0.25);
+	}
+
+	.hero-glow-two {
+		bottom: -8rem;
+		left: 25%;
+		width: 16rem;
+		height: 16rem;
+		background: oklch(0.8 0.11 205 / 0.2);
+	}
+
+	.section-card,
+	.story-card,
+	.social-card {
+		padding: 2rem;
+	}
+
+	.section-heading {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-bottom: 1.35rem;
+	}
+
+	.section-heading p,
+	.story-label {
+		margin: 0 0 0.25rem;
+		color: var(--primary);
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+	}
+
+	.section-heading h2,
+	.story-card h2 {
+		margin: 0;
+		font-size: 1.55rem;
+		line-height: 1.25;
+	}
+
+	.section-heading > :global(svg) {
+		color: var(--primary);
+		font-size: 2rem;
+	}
+
+	.focus-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.9rem;
+	}
+
+	.focus-card {
+		min-height: 11.5rem;
+		padding: 1.25rem;
+		border: 1px solid oklch(0.72 0.1 var(--tile-hue) / 0.2);
+		border-radius: 1rem;
+		background: linear-gradient(145deg, oklch(0.97 0.028 var(--tile-hue)), oklch(0.99 0.008 var(--tile-hue)));
+		animation: about-enter 260ms var(--delay) cubic-bezier(0.22, 1, 0.36, 1) both;
+		transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 180ms ease;
+	}
+
+	:global(.dark) .focus-card {
+		background: linear-gradient(145deg, oklch(0.29 0.035 var(--tile-hue)), oklch(0.25 0.018 var(--tile-hue)));
+	}
+
+	.focus-icon,
+	.story-icon,
+	.social-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.focus-icon {
+		width: 2.7rem;
+		height: 2.7rem;
+		margin-bottom: 1rem;
+		border-radius: 0.8rem;
+		background: oklch(0.83 0.09 var(--tile-hue) / 0.45);
+		color: oklch(0.53 0.17 var(--tile-hue));
+		font-size: 1.45rem;
+	}
+
+	:global(.dark) .focus-icon {
+		background: oklch(0.42 0.08 var(--tile-hue) / 0.5);
+		color: oklch(0.82 0.11 var(--tile-hue));
+	}
+
+	.focus-card h3 {
+		margin: 0 0 0.45rem;
+		font-size: 1.08rem;
+	}
+
+	.focus-card p,
+	.story-card > p:not(.story-label) {
+		margin: 0;
+		color: rgb(82 82 82 / 0.72);
+		line-height: 1.7;
+	}
+
+	:global(.dark) .focus-card p,
+	:global(.dark) .story-card > p:not(.story-label) {
+		color: rgb(229 229 229 / 0.62);
+	}
+
+	.about-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+		gap: 1rem;
+	}
+
+	.story-card {
+		position: relative;
+		overflow: hidden;
+		background:
+			radial-gradient(circle at 100% 0%, oklch(0.78 0.12 300 / 0.18), transparent 42%),
+			var(--card-bg);
+	}
+
+	.story-icon {
+		width: 3rem;
+		height: 3rem;
+		margin-bottom: 1.1rem;
+		border-radius: 1rem;
+		background: linear-gradient(140deg, var(--about-blue), var(--about-pink));
+		box-shadow: 0 0.65rem 1.5rem oklch(0.55 0.16 280 / 0.2);
+		color: white;
+		font-size: 1.5rem;
+	}
+
+	.story-card h2 {
+		margin-bottom: 0.8rem;
+	}
+
+	.tag-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin-top: 1.35rem;
+	}
+
+	.tag-list span {
+		padding: 0.4rem 0.65rem;
+		border-radius: 0.65rem;
+		background: var(--btn-regular-bg);
+		color: var(--btn-content);
+		font-size: 0.78rem;
+		font-weight: 700;
+	}
+
+	.section-heading.compact {
+		margin-bottom: 0.9rem;
+	}
+
+	.social-list {
+		display: grid;
+		gap: 0.55rem;
+	}
+
+	.social-list a {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.65rem;
+		border-radius: 0.85rem;
+		color: inherit;
+		text-decoration: none;
+		transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), background-color 180ms ease;
+	}
+
+	.social-icon {
+		width: 2.6rem;
+		height: 2.6rem;
+		border-radius: 0.75rem;
+		background: var(--btn-regular-bg);
+		color: var(--btn-content);
+		font-size: 1.25rem;
+	}
+
+	.social-copy {
+		display: grid;
+		gap: 0.1rem;
+	}
+
+	.social-copy small {
+		color: rgb(82 82 82 / 0.58);
+		font-size: 0.74rem;
+	}
+
+	:global(.dark) .social-copy small {
+		color: rgb(229 229 229 / 0.5);
+	}
+
+	.social-arrow {
+		color: var(--primary);
+		font-size: 1.1rem;
+	}
+
+	.site-note {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		padding: 0.8rem 1rem;
+		color: rgb(82 82 82 / 0.55);
+		font-size: 0.78rem;
+	}
+
+	:global(.dark) .site-note {
+		color: rgb(229 229 229 / 0.42);
+	}
+
+	.site-note :global(svg) {
+		color: var(--about-pink);
+	}
+
+	.primary-action:active,
+	.secondary-action:active,
+	.social-list a:active {
+		transform: scale(0.98);
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.primary-action:hover,
+		.secondary-action:hover {
+			transform: translateY(-2px);
+		}
+
+		.primary-action:hover {
+			box-shadow: 0 0.9rem 1.8rem oklch(0.55 0.17 260 / 0.3);
+		}
+
+		.focus-card:hover {
+			transform: translateY(-3px);
+			box-shadow: 0 0.8rem 1.8rem oklch(0.45 0.05 var(--tile-hue) / 0.12);
+		}
+
+		.social-list a:hover {
+			transform: translateX(3px);
+			background: var(--btn-plain-bg-hover);
+		}
+	}
+
+	@keyframes about-enter {
+		from {
+			opacity: 0;
+			transform: translateY(8px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@media (max-width: 760px) {
+		.about-hero {
+			grid-template-columns: 1fr;
+			gap: 2rem;
+			padding: 2rem 1.4rem 2.3rem;
+			text-align: center;
+		}
+
+		.hero-copy {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		.portrait-wrap {
+			grid-row: 1;
+		}
+
+		.portrait-ring {
+			width: 9.5rem;
+			height: 9.5rem;
+			border-radius: 1.8rem;
+		}
+
+		.status-badge {
+			right: -0.6rem;
+			bottom: -0.75rem;
+		}
+
+		.focus-grid,
+		.about-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.focus-card {
+			min-height: auto;
+		}
+
+		.section-card,
+		.story-card,
+		.social-card {
+			padding: 1.4rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero-copy,
+		.portrait-wrap,
+		.focus-card {
+			animation: none;
+		}
+
+		.primary-action,
+		.secondary-action,
+		.focus-card,
+		.social-list a {
+			transition: none;
+		}
+	}
+</style>
