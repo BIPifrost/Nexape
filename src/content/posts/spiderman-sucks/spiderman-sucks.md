@@ -3,7 +3,7 @@ title: 电影短评
 published: 2026-08-13
 description: '现在的漫威超级英雄电影有点无聊。'
 image: './欢迎来龙餐馆2.jpg'
-tags: ["Blog", "随笔", "电影", "超级英雄"]
+tags: ["Plog", "随笔", "电影", "超级英雄"]
 category: '随笔'
 draft: false 
 lang: 'zh_CN'

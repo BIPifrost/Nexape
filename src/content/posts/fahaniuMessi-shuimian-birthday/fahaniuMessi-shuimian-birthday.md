@@ -3,7 +3,7 @@ title: "东北军单兵作战日记"
 published: 2026-08-14
 description: '水棉生日这天八人聚会，其实这篇blog落笔的时候已经是第二天凌晨了'
 image: './东北单兵作战.jpg'
-tags: ["Blog", "酬宾", "水棉", "生日", "聚会"]
+tags: ["Plog", "酬宾", "水棉", "生日", "聚会"]
 category: '随笔'
 draft: false 
 lang: "zh_CN"
