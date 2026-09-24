@@ -1,0 +1,213 @@
+---
+import { Icon } from "astro-icon/components";
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
+---
+
+<div class="site-stats-container inline-flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-xs text-50 font-medium select-none">
+    <span class="inline-flex items-center gap-1" title={i18n(I18nKey.pageViews)}>
+        <Icon name="fa6-solid:eye" class="text-xs text-[var(--primary)]" />
+        <span>{i18n(I18nKey.pageViews)}</span>
+        <span class="stat-value-pv font-mono font-bold text-75">--</span>
+    </span>
+    <span class="text-black/15 dark:text-white/15">|</span>
+    <span class="inline-flex items-center gap-1" title={i18n(I18nKey.pageVisitors)}>
+        <Icon name="fa6-solid:user-group" class="text-xs text-[var(--primary)]" />
+        <span>{i18n(I18nKey.pageVisitors)}</span>
+        <span class="stat-value-uv font-mono font-bold text-75">--</span>
+    </span>
+    <span class="stat-admin-badge hidden text-[10px] px-1.5 py-0.5 rounded bg-[var(--primary)]/15 text-[var(--primary)] font-semibold uppercase tracking-wider cursor-default" title="站长免计数模式已生效，本次访问未计入统计">
+        Admin
+    </span>
+</div>
+
+<script>
+    const STORAGE_KEY_IGNORE = 'site_stats_ignore';
+    const STORAGE_KEY_PV = 'site_stats_cached_pv';
+    const STORAGE_KEY_UV = 'site_stats_cached_uv';
+
+    function checkAdminMode(): boolean {
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('admin')) {
+                const val = urlParams.get('admin')?.toLowerCase();
+                if (val === 'true' || val === '1') {
+                    localStorage.setItem(STORAGE_KEY_IGNORE, 'true');
+                    console.info(
+                        '%c[SiteStats]%c 站长免计数模式已开启 (Admin mode enabled)',
+                        'color: #3b82f6; font-weight: bold;',
+                        'color: inherit;'
+                    );
+                } else if (val === 'false' || val === '0') {
+                    localStorage.removeItem(STORAGE_KEY_IGNORE);
+                    console.info(
+                        '%c[SiteStats]%c 站长免计数模式已关闭 (Admin mode disabled)',
+                        'color: #3b82f6; font-weight: bold;',
+                        'color: inherit;'
+                    );
+                }
+            }
+            return localStorage.getItem(STORAGE_KEY_IGNORE) === 'true';
+        } catch {
+            return false;
+        }
+    }
+
+    function isLocalHost(): boolean {
+        const host = window.location.hostname;
+        return (
+            host === 'localhost' ||
+            host === '127.0.0.1' ||
+            host === '0.0.0.0' ||
+            host.endsWith('.local')
+        );
+    }
+
+    function renderDisplay(pv?: string | number, uv?: string | number, isAdmin = false) {
+        const formattedPv =
+            pv !== undefined && pv !== null && pv !== '--'
+                ? typeof pv === 'number'
+                    ? pv.toLocaleString()
+                    : isNaN(Number(pv))
+                      ? String(pv)
+                      : Number(pv).toLocaleString()
+                : '--';
+
+        const formattedUv =
+            uv !== undefined && uv !== null && uv !== '--'
+                ? typeof uv === 'number'
+                    ? uv.toLocaleString()
+                    : isNaN(Number(uv))
+                      ? String(uv)
+                      : Number(uv).toLocaleString()
+                : '--';
+
+        document.querySelectorAll<HTMLElement>('.stat-value-pv').forEach((el) => {
+            el.textContent = formattedPv;
+        });
+
+        document.querySelectorAll<HTMLElement>('.stat-value-uv').forEach((el) => {
+            el.textContent = formattedUv;
+        });
+
+        document.querySelectorAll<HTMLElement>('.stat-admin-badge').forEach((el) => {
+            if (isAdmin) {
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+        });
+    }
+
+    let isFetching = false;
+    function fetchBusuanzi(onSuccess: (data: { site_pv: number; site_uv: number }) => void) {
+        if (isFetching) return;
+        isFetching = true;
+
+        const callbackName = 'BusuanziCallback_' + Math.floor(Math.random() * 1099511627776);
+        const script = document.createElement('script');
+
+        const timeout = setTimeout(() => {
+            isFetching = false;
+            // @ts-ignore
+            delete window[callbackName];
+            if (script.parentNode) script.parentNode.removeChild(script);
+        }, 5000);
+
+        // @ts-ignore
+        window[callbackName] = (data: { site_pv: number; site_uv: number }) => {
+            clearTimeout(timeout);
+            isFetching = false;
+            // @ts-ignore
+            delete window[callbackName];
+            if (script.parentNode) script.parentNode.removeChild(script);
+            if (data && typeof data.site_pv !== 'undefined') {
+                onSuccess(data);
+            }
+        };
+
+        script.type = 'text/javascript';
+        script.defer = true;
+        script.referrerPolicy = 'no-referrer-when-downgrade';
+        script.src = `https://busuanzi.ibruce.info/busuanzi?jsonpCallback=${callbackName}`;
+        document.head.appendChild(script);
+    }
+
+    function refreshStats(shouldFetch = true) {
+        const isAdmin = checkAdminMode();
+        const isLocal = isLocalHost();
+
+        let cachedPv: string | null = null;
+        let cachedUv: string | null = null;
+        try {
+            cachedPv = localStorage.getItem(STORAGE_KEY_PV);
+            cachedUv = localStorage.getItem(STORAGE_KEY_UV);
+        } catch {}
+
+        if (isLocal) {
+            console.info(
+                '%c[SiteStats]%c 本地开发环境，已跳过线上计数累加。',
+                'color: #10b981; font-weight: bold;',
+                'color: inherit;'
+            );
+            renderDisplay(cachedPv || 'DEV', cachedUv || 'DEV', true);
+            return;
+        }
+
+        if (isAdmin) {
+            console.info(
+                '%c[SiteStats]%c 站长免计数模式已生效，本次访问未计入 PV/UV。',
+                'color: #3b82f6; font-weight: bold;',
+                'color: inherit;'
+            );
+            renderDisplay(cachedPv || '--', cachedUv || '--', true);
+            return;
+        }
+
+        // 正常访客：先展示上一次缓存数据，避免界面闪烁
+        if (cachedPv && cachedUv) {
+            renderDisplay(cachedPv, cachedUv, false);
+        }
+
+        // 发送真实统计请求
+        if (shouldFetch) {
+            fetchBusuanzi((data) => {
+                try {
+                    localStorage.setItem(STORAGE_KEY_PV, String(data.site_pv));
+                    localStorage.setItem(STORAGE_KEY_UV, String(data.site_uv));
+                } catch {}
+                renderDisplay(data.site_pv, data.site_uv, false);
+            });
+        }
+    }
+
+    // 初始化
+    refreshStats(true);
+
+    // 适配 Swup 页面无刷跳转
+    function bindSwupEvents() {
+        // @ts-ignore
+        if (window?.swup?.hooks) {
+            // @ts-ignore
+            window.swup.hooks.on('page:view', () => {
+                refreshStats(true);
+            });
+        } else {
+            document.addEventListener(
+                'swup:enable',
+                () => {
+                    // @ts-ignore
+                    if (window?.swup?.hooks) {
+                        // @ts-ignore
+                        window.swup.hooks.on('page:view', () => {
+                            refreshStats(true);
+                        });
+                    }
+                },
+                { once: true }
+            );
+        }
+    }
+
+    bindSwupEvents();
+</script>

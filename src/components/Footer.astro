@@ -1,7 +1,8 @@
 ---
 
-import { profileConfig } from "../config";
+import { profileConfig, siteConfig } from "../config";
 import { url } from "../utils/url-utils";
+import SiteStats from "./misc/SiteStats.astro";
 
 const currentYear = new Date().getFullYear();
 ---
@@ -17,5 +18,10 @@ const currentYear = new Date().getFullYear();
         Powered by
         <a class="transition link text-[var(--primary)] font-medium" target="_blank" href="https://astro.build">Astro</a> &
         <a class="transition link text-[var(--primary)] font-medium" target="_blank" href="https://github.com/saicaca/fuwari">Fuwari</a>
+        {siteConfig.siteStats?.enable !== false && (
+            <div class="mt-2.5">
+                <SiteStats />
+            </div>
+        )}
     </div>
 </div>
